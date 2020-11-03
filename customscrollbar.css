@@ -9,7 +9,7 @@
 }
 .custom-scrollbar-track  {
     border-radius: 15px;
-    background-color: darkgray;
+    /* background-color: darkgray; */
 }
 
 .custom-scrollbar-thumb {
