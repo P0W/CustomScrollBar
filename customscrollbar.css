@@ -1,0 +1,19 @@
+.custom-scrollbar {
+    opacity: 0.5;
+    /* transition: 1.5s; */
+}
+.custom-scrollbar:hover {
+    opacity: 0.9;
+    cursor: grabbing;
+    
+}
+.custom-scrollbar-track  {
+    border-radius: 15px;
+    background-color: darkgray;
+}
+
+.custom-scrollbar-thumb {
+    border-radius: 15px;
+    background-color: grey;
+    border-radius: 8px;
+}

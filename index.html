@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Custom Scroll</title>
+    <link rel="stylesheet" href="customscrollbar.css">
+    <link rel="stylesheet" href="example.css">
+</head>
+
+<body>
+    <div class="box">
+    </div>
+</body>
+
+<script src="CanvasScrollBar.js"></script>
+
+<script>
+    var config = {
+        width: 15,
+        offset: 5
+    };
+
+    var targetNode = document.querySelector('.box');
+
+    var h = 60; // Height of each smaller boxes
+    var T = targetNode.offsetHeight;
+    var N = 1000 //T * 2; // Number of smaller boxes to show
+    var th = Math.max(h, 2 * T - h * N);
+    var canbeShown = Math.floor(T / h);
+    var onePixelScroll = ((N - canbeShown) /
+        (T - th - config.offset));
+
+    function getPromise(idx, startIdx) {
+        return new Promise(resolve => {
+            var item = document.createElement('div');
+            item.classList.add('greyedBox');
+            item.style.top = (idx + 1) * 15 + (idx * 50) + 'px';
+            targetNode.appendChild(item);
+
+            setTimeout(() => {
+                resolve({
+                    'item': item,
+                    'idx': idx + startIdx
+                });
+            }, 1000); /* Simulate a network delay of 500 ms */
+        });
+    }
+
+    function getItems(startIdx) {
+        var promises = [];
+        var allUnusedNodes = document.querySelectorAll('.smallBox');
+        allUnusedNodes.forEach(node => {
+            node.remove();
+        });
+        for (var idx = 0; idx < canbeShown; ++idx) {
+
+            var p = getPromise(idx, startIdx);
+
+            promises.push(p);
+
+        }
+        return promises;
+    }
+
+    function onScrollEvt(y) {
+        // Earlier fetch is not complete
+        var pending = document.querySelectorAll('.greyedBox');
+        if (pending.length > 0) {
+            return;
+        }
+        console.log('Scrolled To:', y);
+        // Scrolling T pixels scrolls off canbeShown boxes
+        // Scrolling y pixels scrolls off ( canbeShown * y )/T
+        var boxesScrolledOff = (onePixelScroll * y);
+        console.log('Visible Range : ' +
+            [Math.floor(boxesScrolledOff),
+            Math.ceil(boxesScrolledOff + canbeShown)]);
+
+        var promises = getItems(Math.floor(boxesScrolledOff),
+            Math.ceil(boxesScrolledOff + canbeShown));
+        Promise.all(promises).then(values => {
+            values.forEach(value => {
+                var item = value.item;
+                var idx = value.idx;
+                item.classList.remove('greyedBox');
+                item.classList.add('smallBox');
+                item.innerText = 'This is box #' +
+                    (idx + 1);
+            });
+        });
+    }
+
+
+    var scrollBar = new ScrollBar(config, onScrollEvt,
+        targetNode);
+
+    scrollBar.setThumbHeight(th);
+
+
+    onScrollEvt(0);
+
+    var greyedBox = document.createElement('div');
+    greyedBox.classList.add('greyedBox');
+</script>
+
+</html>

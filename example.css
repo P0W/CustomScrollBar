@@ -1,0 +1,54 @@
+.box {
+    width: 500px;
+    height: 650px;
+    background-color: lightblue;
+    border-radius: 15px;
+    shape-rendering: crispEdges;
+}
+
+.smallBox {
+    width:450px;
+    height:50px;
+    background-color: whitesmoke;
+    border-radius: 5px;
+    shape-rendering: crispEdges;
+    text-align: center;
+    font-family: 'Times New Roman', Courier, monospace;
+    font-style: italic;
+    position: absolute;
+    margin: 0px 20px 5px;
+    border: 2px dotted black;
+}
+
+/* .greyedBox1 {
+    width:450px;
+    height:45px;
+    border-radius: 5px;
+    shape-rendering: crispEdges;
+    position: absolute;
+    opacity: 0.3;
+    margin: 0px 20px 5px;
+    background: repeating-linear-gradient(
+  -45deg,
+  #606dbc,
+  #606dbc 10px,
+  #465298 10px,
+  #465298 20px
+);
+} */
+
+.greyedBox {
+    border: 6px solid grey; /* Light grey */
+    border-top: 5px solid darkgray; /* Blue */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+    position: absolute;
+    margin: 0px 200px 5px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
