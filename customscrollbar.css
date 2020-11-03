@@ -1,6 +1,6 @@
 .custom-scrollbar {
-    opacity: 0.5;
-    /* transition: 1.5s; */
+    opacity: 0.3;
+    transition: 1.0s;
 }
 .custom-scrollbar:hover {
     opacity: 0.9;
