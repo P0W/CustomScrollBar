@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 
 <head>
-    <title>Custom Scroll</title>
+    <title>Custom Scroll Example with DOM Recycling by P0W</title>
+    <!-- Main customscrollbar css, to change Scrollbar look and feel -->
     <link rel="stylesheet" href="customscrollbar.css">
+    <!-- This example usage css -->
     <link rel="stylesheet" href="example.css">
 </head>
 
@@ -10,63 +12,75 @@
     <div class="box">
     </div>
 </body>
-
+<!-- Load the customscrollbar javascript -->
 <script src="CustomScrollBar.js"></script>
 
 <script>
+    /** Global Var **/
     var config = {
         width: 15,
         offset: 5
     };
 
+    // The target where we have to stick the scrollbar- currently at right side only
     var targetNode = document.querySelector('.box');
-
-    var h = 60; // Height of each smaller boxes
-    var T = targetNode.offsetHeight;
-    var N = 1000 //T * 2; // Number of smaller boxes to show
-    var th = Math.max(h, 2 * T - h * N);
-    var canbeShown = Math.floor(T / h);
+    var topMargin = 10; // The margin between each small box
+    var h = 50 - topMargin; // The absolute height of each smaller boxes
+    var T = targetNode.offsetHeight; // Height of the targetNode
+    var N = 1000; // Number of smaller boxes to show
+    var th = Math.max(h, 2 * T - h * N); // Height of thumb of scrollbar
+    var canbeShown = Math.floor(T / (h + topMargin)); // Number of smallBoxes we can show
     var onePixelScroll = ((N - canbeShown) /
         (T - th - config.offset));
 
     function getPromise(idx, startIdx) {
         return new Promise(resolve => {
+            // Create a dom on fly
             var item = document.createElement('div');
+            // Marker to know its a loading dom
             item.classList.add('greyedBox');
-            item.style.top = (idx + 1) * 15 + (idx * 50) + 'px';
+            item.style.top = (idx + 1) * topMargin + (idx * h) + 'px';
+            // Attach this to targetNode
             targetNode.appendChild(item);
-
+            /* Simulate a network delay of 1 seconds */
             setTimeout(() => {
                 resolve({
                     'item': item,
-                    'idx': idx + startIdx
+                    'idx': idx,
+                    'startIdx': startIdx
                 });
-            }, 1000); /* Simulate a network delay of 500 ms */
+            }, 1000);
         });
     }
 
     function getItems(startIdx) {
         var promises = [];
+        // Remove the old doms : query the smallBox class
         var allUnusedNodes = document.querySelectorAll('.smallBox');
         allUnusedNodes.forEach(node => {
             node.remove();
         });
+        // Grab all the promises for each individual boxes
         for (var idx = 0; idx < canbeShown; ++idx) {
-
             var p = getPromise(idx, startIdx);
-
             promises.push(p);
-
         }
         return promises;
     }
 
     function onScrollEvt(y) {
-        // Earlier fetch is not complete
+        /**
+         * On a scroll basically the pattern should be
+         * a) FETCH - Data Request : during wait show sow other loading detail
+         * b) RENDER - Draw on doms 
+         *
+        */
+        // Earlier fetch is not complete: still we can find the 'greyedBox'
         var pending = document.querySelectorAll('.greyedBox');
         if (pending.length > 0) {
             return;
         }
+        // Some debug prints
         console.log('Scrolled To:', y);
         // Scrolling T pixels scrolls off canbeShown boxes
         // Scrolling y pixels scrolls off ( canbeShown * y )/T
@@ -75,31 +89,36 @@
             [Math.floor(boxesScrolledOff),
             Math.ceil(boxesScrolledOff + canbeShown)]);
 
+        // Request (Fetch) new boxes - through promises
         var promises = getItems(Math.floor(boxesScrolledOff),
             Math.ceil(boxesScrolledOff + canbeShown));
+        // Once all promises are resolve (Render) them 
         Promise.all(promises).then(values => {
             values.forEach(value => {
+                // Rendering logic
                 var item = value.item;
                 var idx = value.idx;
+                var startIdx = value.startIdx;
+
                 item.classList.remove('greyedBox');
                 item.classList.add('smallBox');
+                item.style.top = (idx + 1) * topMargin + (idx * h) + 'px';
+
+                item.style.height = h + 'px';
                 item.innerText = 'This is box #' +
-                    (idx + 1);
+                    (idx + 1 + startIdx);
             });
         });
     }
 
-
+    // Instantiate the scrollbar
     var scrollBar = new ScrollBar(config, onScrollEvt,
         targetNode);
-
+    // Set the calculated thumb size
     scrollBar.setThumbHeight(th);
 
-
+    // Force the very first scroll with thumb positioned at 0
     onScrollEvt(0);
-
-    var greyedBox = document.createElement('div');
-    greyedBox.classList.add('greyedBox');
 </script>
 
 </html>

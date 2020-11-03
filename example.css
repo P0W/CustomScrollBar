@@ -1,22 +1,21 @@
 .box {
-    width: 500px;
-    height: 650px;
+    width: 600px;
+    height: 800px;
     background-color: lightblue;
     border-radius: 15px;
     shape-rendering: crispEdges;
 }
 
 .smallBox {
-    width:450px;
-    height:50px;
+    width:85%;
     background-color: whitesmoke;
-    border-radius: 5px;
+    border-radius: 10px;
     shape-rendering: crispEdges;
     text-align: center;
     font-family: 'Times New Roman', Courier, monospace;
     font-style: italic;
     position: absolute;
-    margin: 0px 20px 5px;
+    margin-left: 3%;
     border: 2px dotted black;
 }
 
