@@ -6,50 +6,51 @@
         var width = config.width || 20;
         var offset = config.offset || 5;
 
-        // Create HTML tags
+        // Create HTML div tags
+        var scrollDiv = document.createElement('div');
         var trackDiv = document.createElement('div');
-        var trackCanvas = document.createElement('div');
 
-        trackDiv.classList.add('custom-scrollbar');
-        trackCanvas.classList.add('custom-scrollbar-track');
-        trackDiv.style.position = 'relative';
-        trackCanvas.style.position = 'absolute';
-        trackDiv.style.left = (targetNode.offsetWidth - width) + 'px';
-        trackDiv.appendChild(trackCanvas);
+        scrollDiv.classList.add('custom-scrollbar');
+        trackDiv.classList.add('custom-scrollbar-track');
+        scrollDiv.style.position = 'relative';
+        trackDiv.style.position = 'absolute';
+        scrollDiv.style.left = (targetNode.offsetWidth - width) + 'px';
+        scrollDiv.style.display = 'block';
+        scrollDiv.style.visibility = 'visible';
+        scrollDiv.appendChild(trackDiv);
 
-        var thumbCanvas = document.createElement('div');
-        thumbCanvas.classList.add('custom-scrollbar-thumb');
-        thumbCanvas.style.position = 'absolute';
-        thumbCanvas.style.left = '0px';
-        thumbCanvas.style.top = '0px';
-        trackDiv.appendChild(thumbCanvas);
-        targetNode.appendChild(trackDiv);
-
+        var thumbDiv = document.createElement('div');
+        thumbDiv.classList.add('custom-scrollbar-thumb');
+        thumbDiv.style.position = 'absolute';
+        thumbDiv.style.left = '0px';
+        thumbDiv.style.top = '0px';
+        scrollDiv.appendChild(thumbDiv);
+        targetNode.appendChild(scrollDiv);
 
         this.offset = offset; // 5px margin up and below
         this.height = targetNode.offsetHeight;
 
         // Considering it takes 20 wheels to move down
         this.deltaMove = (this.height - thumbHeight - 2 * this.offset) / 20;
-        this.trackCanvas = trackCanvas;
-        this.thumbCanvas = thumbCanvas;
-
+        this.scrollDiv = scrollDiv;
+        this.trackDiv = trackDiv;
+        this.thumbDiv = thumbDiv;
 
         // Congigure Track
-        this.trackCanvas.style.height = this.height + 'px';
-        this.trackCanvas.style.width = width + 'px';
+        this.trackDiv.style.height = this.height + 'px';
+        this.trackDiv.style.width = width + 'px';
 
         // Configure Thumb
         this.setThumbHeight(thumbHeight);
-        var sideMargins = 2; // 3 px from left and right
-        this.thumbCanvas.style.width = width - (2 * sideMargins) + 'px';
-        this.thumbCanvas.style.marginTop = this.offset + 'px';
-        this.thumbCanvas.style.marginLeft = sideMargins + 'px';
+        var sideMargins = 2; // 2 px from left and right
+        this.thumbDiv.style.width = width - (2 * sideMargins) + 'px';
+        this.thumbDiv.style.marginTop = this.offset + 'px';
+        this.thumbDiv.style.marginLeft = sideMargins + 'px';
 
         // Configure events
-        this.thumbCanvas.addEventListener('mousedown',
+        this.thumbDiv.addEventListener('mousedown',
             this.handleMouseDownEvt.bind(this));
-        this.thumbCanvas.addEventListener('mouseup',
+        this.thumbDiv.addEventListener('mouseup',
             this.handleMouseMoveUpEvt.bind(this));
 
         targetNode.addEventListener('mousewheel',
@@ -60,14 +61,14 @@
             this.handleMouseMoveUpEvt.bind(this));
 
         // Canvas Contexts
-        // this.trackCanvasCtx = this.trackCanvas.getContext('2d');
-        // this.thumbCanvasCtx = this.thumbCanvas.getContext('2d');
+        // this.trackCanvasCtx = this.trackDiv.getContext('2d');
+        // this.thumbCanvasCtx = this.thumbDiv.getContext('2d');
 
         // Scrollbar internal setup
         this.mouseDownStaus = {
             'pressed': false,
             'clientY': 0,
-            'lastDragPos': this.offset,
+            'lastDragPos': offset
         };
 
         // The callback on scroll event
@@ -84,23 +85,38 @@
 
         },
 
+        setVisiblility: function (state) {
+            if (state) {
+                this.scrollDiv.style.visibility = 'visible';
+                this.scrollDiv.style.display = 'block';
+            } else {
+                this.scrollDiv.style.visibility = 'hidden';
+                this.scrollDiv.style.display = 'none';
+            }
+        },
+
+        isVisible: function (state) {
+            return this.scrollDiv.style.visibility === 'visible' &&
+                this.scrollDiv.style.display === 'block';
+        },
+
         setThumbHeight: function (size) {
             size = Math.max(this.offset, Math.min(this.height - this.offset, size));
-            this.thumbCanvas.style.height = size + 'px';
+            this.thumbDiv.style.height = size + 'px';
         },
 
         getThumbHeight: function () {
-            return parseFloat(this.thumbCanvas.style.height, 10);
+            return parseFloat(this.thumbDiv.style.height, 10);
         },
 
         setThumbPosition: function (pos) {
             pos = Math.max(this.offset,
                 Math.min(this.height - this.getThumbHeight(), pos));
-            this.thumbCanvas.style.marginTop = pos + 'px';
+            this.thumbDiv.style.marginTop = pos + 'px';
         },
 
         getThumbPosition: function () {
-            return parseFloat(this.thumbCanvas.style.marginTop, 10);
+            return parseFloat(this.thumbDiv.style.marginTop, 10);
         },
 
         handleMouseDownEvt: function (evt) {
@@ -110,7 +126,7 @@
         },
 
         handleMouseMoveUpEvt: function () {
-            if (this.mouseDownStaus.pressed) {
+            if (this.mouseDownStaus.pressed && this.isVisible()) {
                 this.mouseDownStaus.pressed = false;
                 this.mouseDownStaus.lastDragPos = this.getThumbPosition();
                 this.onScroll();
@@ -118,7 +134,7 @@
         },
 
         handleMouseMoveEvt: function (evt) {
-            if (this.mouseDownStaus.pressed) {
+            if (this.mouseDownStaus.pressed && this.isVisible()) {
                 var pos = evt.clientY - this.mouseDownStaus.clientY +
                     this.mouseDownStaus.lastDragPos;
                 this.setThumbPosition(pos);
@@ -126,13 +142,15 @@
         },
 
         handleMouseWheelEvt: function (evt) {
-            var direction = evt.wheelDeltaY < 0 ? +1 : -1;
-            this.mouseDownStaus.lastDragPos = this.getThumbPosition();
-            var pos = this.deltaMove * direction +
-                this.mouseDownStaus.lastDragPos;
-            this.setThumbPosition(pos);
-            this.onScroll();
-            this.mouseDownStaus.lastDragPos = this.getThumbPosition();
+            if (this.isVisible()) {
+                var direction = evt.wheelDeltaY < 0 ? +1 : -1;
+                this.mouseDownStaus.lastDragPos = this.getThumbPosition();
+                var pos = this.deltaMove * direction +
+                    this.mouseDownStaus.lastDragPos;
+                this.setThumbPosition(pos);
+                this.onScroll();
+                this.mouseDownStaus.lastDragPos = this.getThumbPosition();
+            }
         }
     };
 })(window);

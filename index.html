@@ -71,7 +71,7 @@
     function onScrollEvt(y) {
         /**
          * On a scroll basically the pattern should be
-         * a) FETCH - Data Request : during wait show sow other loading detail
+         * a) FETCH - Data Request : during wait show other loading detail
          * b) RENDER - Draw on doms 
          *
         */
@@ -114,8 +114,14 @@
     // Instantiate the scrollbar
     var scrollBar = new ScrollBar(config, onScrollEvt,
         targetNode);
-    // Set the calculated thumb size
-    scrollBar.setThumbHeight(th);
+
+    if (th >= T) {
+        // Hide scroll bar
+        scrollBar.setVisiblility(false);
+    } else {
+        // Set the calculated thumb size
+        scrollBar.setThumbHeight(th);
+    }
 
     // Force the very first scroll with thumb positioned at 0
     onScrollEvt(0);
