@@ -150,6 +150,7 @@
                 var pos = evt.clientY - this.mouseDownStaus.clientY +
                     this.mouseDownStaus.lastDragPos;
                 this.setThumbPosition(pos);
+                this.onScroll();
             }
         },
 
