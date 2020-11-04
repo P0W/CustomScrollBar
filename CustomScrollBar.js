@@ -5,6 +5,7 @@
         var thumbHeight = config.thumbHeight || 100;
         var width = config.width || 20;
         var offset = config.offset || 5;
+        var visible = config.hasOwnProperty('visible') ? config.visible : true;
 
         // Create HTML div tags
         var scrollDiv = document.createElement('div');
@@ -15,8 +16,6 @@
         scrollDiv.style.position = 'relative';
         trackDiv.style.position = 'absolute';
         scrollDiv.style.left = (targetNode.offsetWidth - width) + 'px';
-        scrollDiv.style.display = 'block';
-        scrollDiv.style.visibility = 'visible';
         scrollDiv.appendChild(trackDiv);
 
         var thumbDiv = document.createElement('div');
@@ -47,18 +46,26 @@
         this.thumbDiv.style.marginTop = this.offset + 'px';
         this.thumbDiv.style.marginLeft = sideMargins + 'px';
 
-        // Configure events
+        // Set visibility
+        this.setVisiblility(visible);
+
+        // Configure events - On scrollbar thumb
         this.thumbDiv.addEventListener('mousedown',
             this.handleMouseDownEvt.bind(this));
         this.thumbDiv.addEventListener('mouseup',
-            this.handleMouseMoveUpEvt.bind(this));
+            this.handleMouseUpEvt.bind(this));
 
+        // Configure events - On target node
         targetNode.addEventListener('mousewheel',
             this.handleMouseWheelEvt.bind(this));
-        targetNode.addEventListener('mousemove',
-            this.handleMouseMoveEvt.bind(this));
         targetNode.addEventListener('mouseup',
-            this.handleMouseMoveUpEvt.bind(this));
+            this.handleMouseUpEvt.bind(this));
+
+        // Configure events - On document body
+        document.body.addEventListener('mousemove',
+            this.handleMouseMoveEvt.bind(this));
+        document.body.addEventListener('mouseup',
+            this.handleMouseUpEvt.bind(this));
 
         // Canvas Contexts
         // this.trackCanvasCtx = this.trackDiv.getContext('2d');
@@ -100,6 +107,10 @@
                 this.scrollDiv.style.display === 'block';
         },
 
+        getTopMargin: function () {
+            return this.offset;
+        },
+
         setThumbHeight: function (size) {
             size = Math.max(this.offset, Math.min(this.height - this.offset, size));
             this.thumbDiv.style.height = size + 'px';
@@ -125,8 +136,9 @@
             this.mouseDownStaus.lastDragPos = this.getThumbPosition();
         },
 
-        handleMouseMoveUpEvt: function () {
+        handleMouseUpEvt: function (evt) {
             if (this.mouseDownStaus.pressed && this.isVisible()) {
+                this.handleMouseMoveEvt(evt);
                 this.mouseDownStaus.pressed = false;
                 this.mouseDownStaus.lastDragPos = this.getThumbPosition();
                 this.onScroll();
