@@ -33,13 +33,16 @@
     var onePixelScroll = ((N - canbeShown) /
         (T - th - config.offset));
 
+    var greyedBoxClass =  'dot-floating';
     function getPromise(idx, startIdx) {
         return new Promise(resolve => {
             // Create a dom on fly
             var item = document.createElement('div');
             // Marker to know its a loading dom
-            item.classList.add('greyedBox');
-            item.style.top = (idx + 1) * topMargin + (idx * h) + 'px';
+            item.classList.add(greyedBoxClass);
+            item.style.top = (idx + 1) * 2 + (idx * h) + 'px';
+            item.style.position = 'relative';
+            item.style.left =  '50%';
             // Attach this to targetNode
             targetNode.appendChild(item);
             /* Simulate a network delay of 1 seconds */
@@ -49,7 +52,7 @@
                     'idx': idx,
                     'startIdx': startIdx
                 });
-            }, 1000);
+            }, 500);
         });
     }
 
@@ -75,8 +78,8 @@
          * b) RENDER - Draw on doms 
          *
         */
-        // Earlier fetch is not complete: still we can find the 'greyedBox'
-        var pending = document.querySelectorAll('.greyedBox');
+        // Earlier fetch is not complete: still we can find the 'greyedBoxClass'
+        var pending = document.querySelectorAll('.' + greyedBoxClass);
         if (pending.length > 0) {
             return;
         }
@@ -100,10 +103,11 @@
                 var idx = value.idx;
                 var startIdx = value.startIdx;
 
-                item.classList.remove('greyedBox');
+                item.classList.remove(greyedBoxClass);
                 item.classList.add('smallBox');
+                item.style.position = 'absolute';
                 item.style.top = (idx + 1) * topMargin + (idx * h) + 'px';
-
+                item.style.left =  '';
                 item.style.height = h + 'px';
                 item.innerText = 'This is box #' +
                     (idx + 1 + startIdx);
