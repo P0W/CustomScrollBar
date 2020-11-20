@@ -184,7 +184,7 @@
 
         handleMouseClickEvt: function (evt) {
             if (this.isVisible()) {
-                var targetPos = evt.clientY - this.offset - this.getThumbHeight();
+                var targetPos = evt.offsetY - this.offset - this.getThumbHeight();
                 var currentPos = this.getThumbPosition();
                 var duration = 500;
                 var promise = this.soothScrollTo(currentPos, targetPos, duration);
